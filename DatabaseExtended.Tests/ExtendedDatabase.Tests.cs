@@ -1,232 +1,193 @@
 
-using ExtendedDatabase;
+using System;
+//using ExtendedDatabase;
 using NUnit.Framework;
 
-using System;
-
-
-namespace Tests
+namespace Tests//ExtendedDatabase
 {
+    [TestFixture]
     public class ExtendedDatabaseTests
     {
-        private const long InitialId = 100;
-        private const long DidiId = 156;
-        private const long TonyId = 298;
-        private const int NewID = 987;
-        private const long NegativeId = -9;
-        private const int InvalidID = 999;
 
-        private const string InitialUserName = "Gogo";
-        private const string DidiUserName = "Didi";
-        private const string TonyUserName = "Tony";
-        private const string NewUsername = "Fifi";
-        private const string InvalidUserName = "Pipi";
+        private Person person;
+        private readonly Person[] persons = new Person[]
+        {
+            new Person(1,"Ivan"),
+            new Person(2,"Stamat")
+        };
 
-        private const int InitialCount = 3;
-        private const int ExpectedCount = 4;
-        private const int ExpectedRemoveCount = 2;
-        private const int InvalidArrayLength = 17;
-        private const int ValidArrayLength = 13;
-
-        private Person personGogo;
-        private Person personDidi;
-        private Person personTony;
-        private ExtendedDatabase.ExtendedDatabase database;
+        private ExtendedDatabase extendedDatabase;
 
         [SetUp]
         public void Setup()
         {
-            this.personGogo = new Person(InitialId, InitialUserName);
-            this.personDidi = new Person(DidiId, DidiUserName);
-            this.personTony = new Person(TonyId, TonyUserName);
-
-            this.database = new ExtendedDatabase.
-                ExtendedDatabase(personGogo, personDidi, personTony);
-        }
-
-        [Test]
-        public void CtorOfTheClassPersonShoudInitializeCorrectly()
-        {
-            long expectedId = InitialId;
-            string expectedUsername = InitialUserName;
-
-            long actualId = this.personGogo.Id;
-            string actualUserName = this.personGogo.UserName;
-
-            Assert.IsTrue(expectedId == actualId);
-            Assert.True(expectedUsername == actualUserName);
-        }
-
-        [Test]
-        public void CtorExtendedDatabaseShouldInitializePersonArrayCorrectly()
-        {
-            int expectedCount = InitialCount;
-            int actluatCount = this.database.Count;
-
-            Assert.IsTrue(expectedCount == actluatCount);
-        }
-
-        [Test]
-        public void CtorExtendedDatabaseShouldThrowArgumentExceptionInvalidCapacity()
-        {
-            Person[] data = new Person[InvalidArrayLength];
-
-            for (int i = 0; i < data.Length; i++)
+            this.person = new Person(1, "Ivan");
+            Person[] personsData = new Person[]
             {
-                Person person = new Person(i, InitialUserName + i);
-                data[0] = person;
-            }
+                new Person(1,"Ivan1"),
+                new Person(2,"Ivan2"),
+                new Person(3,"Ivan3"),
+                new Person(4,"Ivan4"),
+                new Person(5,"Ivan5"),
+                new Person(6,"Ivan6"),
+                new Person(7,"Ivan7"),
+                new Person(8,"Ivan8"),
+                new Person(9,"Ivan9"),
+                new Person(10,"Ivan10"),
+                new Person(11,"Ivan11"),
+                new Person(12,"Ivan12"),
+                new Person(13,"Ivan13"),
+                new Person(14,"Ivan14"),
+                new Person(15,"Ivan15"),
 
-            Assert.That(() => new ExtendedDatabase.ExtendedDatabase(data),
-                Throws
-                .ArgumentException
-                .With
-                .Message
-                .EqualTo("Provided data length should be in range [0..16]!"));
+            };
+
+            this.extendedDatabase = new ExtendedDatabase(personsData);
         }
 
         [Test]
-        public void AddElementWhenTheCollectionIsFullAndThrowInvalidOperationException()
+        public void ConstructorOfPersonShouldWorkCorrectly()
         {
-            Person[] data = new Person[ValidArrayLength];
+            long expectedID = (long)1;
+            string expectedUserName = "Ivan";
 
-            for (int i = 0; i < data.Length; i++)
+            long actualID = this.person.Id;
+            string actualUSer = this.person.UserName;
+
+            Assert.That(actualUSer, Is.EqualTo(expectedUserName));
+            Assert.That(actualID, Is.EqualTo(expectedID));
+
+        }
+
+        [Test]
+        public void ConstructorOfDatabaseShouldWorkCorrectly()
+        {
+            int expectedCount = 2;
+
+            this.extendedDatabase = new ExtendedDatabase(persons);
+            int actualCount = this.extendedDatabase.Count;
+
+            Assert.That(actualCount, Is.EqualTo(expectedCount));
+
+        }
+
+        [Test]
+        public void ConstructorShouldThrowExceptionWhenBiggerCollection()
+        {
+            Person[] data = new Person[17];
+
+            Assert.Throws<ArgumentException>(() =>
             {
-                Person person = new Person(i, InitialUserName + i);
-                this.database.Add(person);
-            }
-
-            Person newPerson = new Person(NewID, NewUsername);
-
-            Assert.That(() => this.database.Add(newPerson),
-                Throws
-                .InvalidOperationException
-                .With
-                .Message
-                .EqualTo("Array's capacity must be exactly 16 integers!"));
+                this.extendedDatabase = new ExtendedDatabase(data);
+            }, "Provided data length should be in range [0..16]!");
         }
 
         [Test]
-        public void AddElementWithExistingUsernameShouldThrowException()
+        public void AddShouldThrowExceptionWhenFullCapacity()
         {
-            Person person = new Person(NewID, InitialUserName);
-
-            Assert
-                .Throws<InvalidOperationException>(
-                    () => this.database.Add(person));
+            this.extendedDatabase.Add(new Person(16, "Ivan16"));
+            Assert.Throws<InvalidOperationException>(() =>
+            {
+                this.extendedDatabase.Add(new Person(17, "Ivan17"));
+            }, "Array's capacity must be exactly 16 integers!");
         }
 
         [Test]
-        public void AddElementWithExistingIdShouldThrowException()
+        public void AddShouldThrowExceptionWhenUserNameExists()
         {
-            Person person = new Person(InitialId, NewUsername);
-
-            Assert
-                .Throws<InvalidOperationException>(
-                    () => this.database.Add(person));
-
-            Assert.That(() => this.database.Add(person),
-                Throws
-                .InvalidOperationException
-                .With
-                .Message
-                .EqualTo("There is already user with this Id!"));
+            Person personToAdd = new Person(222, "Ivan1");
+            Assert.Throws<InvalidOperationException>(() =>
+            {
+                this.extendedDatabase.Add(personToAdd);
+            }, "There is already user with this username!");
         }
 
         [Test]
-        public void AddNewElementShouldWorkCorrect()
+        public void AddShouldThrowExceptionWhenIDExists()
         {
-            Person person = new Person(NewID, NewUsername);
-
-            this.database.Add(person);
-
-            int expectedCount = ExpectedCount;
-            int actualCount = this.database.Count;
-
-            Assert.AreEqual(expectedCount, actualCount);
+            Person personToAdd1 = new Person(2, "Peter");
+            Assert.Throws<InvalidOperationException>(() =>
+            {
+                this.extendedDatabase.Add(personToAdd1);
+            }, "There is already user with this Id!");
         }
 
         [Test]
-        public void TestRemoveElementWhenTheCollectionIsEmptyShouldThrowException()
+        public void RemoveShouldDecreaseCount()
         {
-            this.database = new ExtendedDatabase.ExtendedDatabase();
+            int expectedCount = 14;
+            this.extendedDatabase.Remove();
 
-            Assert
-                .Throws<InvalidOperationException>(
-                    () => this.database.Remove());
+            int actualCount = this.extendedDatabase.Count;
+
+            Assert.That(actualCount, Is.EqualTo(expectedCount));
         }
 
         [Test]
-        public void TestRemoveelementShouldWorkCorrect()
+        public void RemoveShouldThrowExceptionWhenCountZero()
         {
-            this.database.Remove();
-
-            int expectedCount = ExpectedRemoveCount;
-            int actualCount = this.database.Count;
-
-            Assert.That(expectedCount == actualCount);
+            ExtendedDatabase data = new ExtendedDatabase(this.persons);
+            data.Remove();
+            data.Remove();
+            Assert.Throws<InvalidOperationException>(() =>
+            {
+                data.Remove();
+            });
         }
 
         [Test]
-        public void TestFindByUsernameWhenItIsNullOrEmptyShoulThrowException()
+        public void FindByNameShouldWorkCorrectly()
         {
-            Assert
-                .Throws<ArgumentNullException>(
-                    () => this.database.FindByUsername(null));
+            Person expectedPerson = new Person(1, "Ivan1");
+            string searchedName = "Ivan1";
+
+            Assert.That(this.extendedDatabase.FindByUsername(searchedName).UserName, Is.EqualTo(expectedPerson.UserName));
         }
 
         [Test]
-        public void TestFindByUsernameWhenItNotExistShouldThrowException()
+        public void FindByUserNameShouldThrowExcWhenNameIsNull()
         {
-            Assert.That(() => this.database.FindByUsername(InvalidUserName),
-                Throws
-                .InvalidOperationException
-                .With
-                .Message
-                .EqualTo("No user is present by this username!"));
+            Assert.Throws<ArgumentNullException>(() =>
+            {
+                this.extendedDatabase.FindByUsername("");
+            }, "Username parameter is null!");
         }
 
         [Test]
-        public void TestFindByUsernameShouldWorkCorrect()
+        public void FindByNameShouldThrowExcWhenNameDontExists()
         {
-            Person person = this.database
-                .FindByUsername(InitialUserName);
-
-            string expectedUsername = InitialUserName;
-            string actualUsername = person.UserName;
-
-            Assert.AreEqual(expectedUsername, actualUsername);
+            Assert.Throws<InvalidOperationException>(() =>
+            {
+                this.extendedDatabase.FindByUsername("Aleksandra");
+            }, "No user is present by this username!");
         }
 
         [Test]
-        public void TestFindByIdWhenItIsNegativeShouldThrowException()
+        public void FindByIDShouldWorkCorrectly()
         {
-            Assert
-                .Throws<ArgumentOutOfRangeException>
-                    (() => this.database.FindById(NegativeId));
+            Person expectedPerson = new Person(1, "Ivan1");
+            long searchedID = (long)1;
+
+            Assert.That(this.extendedDatabase.FindById(searchedID).Id, Is.EqualTo(expectedPerson.Id));
         }
 
         [Test]
-        public void TestFindByIdWhenItIsNotExistShouldThrowException()
+        public void FindByIDShouldThrowExcWhenIDBelowZero()
         {
-            Assert.That(() => this.database.FindById(InvalidID),
-                Throws
-                .InvalidOperationException
-                .With
-                .Message
-                .EqualTo("No user is present by this ID!"));
+            Assert.Throws<ArgumentOutOfRangeException>(() =>
+            {
+                this.extendedDatabase.FindById(-10);
+            }, "Id should be a positive number!");
         }
 
         [Test]
-        public void TestFindByIdWhenItIsExistShouldWorkCorrect()
+        public void FindByIDShouldThrowExcWhenUnExistingID()
         {
-            Person person = this.database
-                .FindById(InitialId);
-
-            long expectedId = InitialId;
-            long actualId = person.Id;
-
-            Assert.AreEqual(expectedId, actualId);
+            Assert.Throws<InvalidOperationException>(() =>
+            {
+                this.extendedDatabase.FindById(100);
+            }, "No user is present by this ID!");
         }
+
     }
 }
