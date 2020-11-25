@@ -1,8 +1,7 @@
 using System;
-
 using NUnit.Framework;
 
-namespace Tests//CarManager
+namespace CarManager.Tests
 {
     public class CarTests
     {
